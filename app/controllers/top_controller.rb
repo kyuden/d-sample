@@ -13,4 +13,3 @@ class TopController < ApplicationController
     render json: dummy_users
   end
 end
-

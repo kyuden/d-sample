@@ -13,7 +13,6 @@ RUN apk update && \
     libxml2-dev \
     libxslt-dev \
     linux-headers \
-    mysql-dev \
     nodejs \
     openssh \
     ruby-dev \
@@ -21,26 +20,24 @@ RUN apk update && \
     tzdata \
     yaml \
     yaml-dev \
-    zlib-dev \
-    imagemagick \
-    jq
+    zlib-dev
 
 RUN gem install bundler
 
 ENV RAILS_ENV=production
 ARG RAILS_MASTER_KEY
 
-RUN mkdir /app
-WORKDIR /app
-ADD Gemfile /app/Gemfile
-ADD Gemfile.lock /app/Gemfile.lock
+RUN mkdir /src
+WORKDIR /src
+ADD Gemfile /src/Gemfile
+ADD Gemfile.lock /src/Gemfile.lock
 
-RUN bundle config build.nokogiri --use-system-libraries && \
-    bundle config build.mysql2 --use-system-libraries && \
-    bundle install --jobs 20 --retry 5
+RUN echo "install: --no-document" > /src/.gemrc && echo "update: --no-document" >> /src/.gemrc
+RUN bundle install --path vendor/bundle --jobs 2 && \
+    bundle clean
 
-ADD . /app
-RUN echo $RAILS_MASTER_KEY > /app/config/secrets.yml.key
+ADD . /src
+RUN echo $RAILS_MASTER_KEY > /src/config/secrets.yml.key
 
 EXPOSE 3000
 
